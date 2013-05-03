@@ -17,10 +17,6 @@ module Gluer
       committed
     end
 
-    def on_rollback(&hook)
-      @rollback_hook = RegistrationHook.new(hook)
-    end
-
     def rollback
       rollback_hook.call(registry, context, *args, &block) if committed?
     end
