@@ -13,18 +13,23 @@ module Gluer
     end
 
     def commit
-      commit_hook.call(registry, context, *args, &block)
-      committed
+      registry.tap do |registry|
+        commit_hook.call(registry, context, *args, &block)
+        committed_on(registry)
+      end
     end
 
     def rollback
-      rollback_hook.call(registry, context, *args, &block) if committed?
+      if committed?
+        rollback_hook.call(registry_when_committed, context, *args, &block)
+      end
     end
 
   private
-    attr_reader :definition, :context, :args, :block
+    attr_reader :definition, :context, :args, :block, :registry_when_committed
 
-    def committed
+    def committed_on(registry)
+      @registry_when_committed = registry
       @committed = true
     end
 
