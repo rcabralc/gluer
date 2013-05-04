@@ -1,5 +1,5 @@
-require 'gluer'
 require 'spec_helper'
+require 'gluer'
 
 describe "Default usage" do
   before(:all) do
