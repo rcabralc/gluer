@@ -37,10 +37,6 @@ module Gluer
   private
     attr_reader :definition, :context, :args, :block
 
-    def committed_on(registry)
-      @registry_when_committed = registry
-    end
-
     def mark_committed
       @committed = true
     end
