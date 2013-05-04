@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = Gluer::VERSION
   spec.authors       = ["rcabralc"]
   spec.email         = ["rcabralc@gmail.com"]
-  spec.description   = %q{Configuration reloader}
-  spec.summary       = %q{Reloads configuration code in a per-file basis}
+  spec.description   = %q{Reloads configuration code in a per-file basis}
+  spec.summary       = %q{Configuration reloader}
   spec.homepage      = ""
   spec.license       = "MIT"
 
