@@ -10,31 +10,43 @@ module Gluer
       @args = args
       @block = block
       @committed = false
+      @rolled_back = false
     end
 
     def commit
-      registry.tap do |registry|
-        commit_hook.call(registry, context, *args, &block)
-        committed_on(registry)
-      end
+      raise RuntimeError, 'already committed' if committed?
+      commit_hook.call(registry, context, *args, &block)
+      mark_committed
     end
 
     def rollback
-      if committed?
-        rollback_hook.call(registry_when_committed, context, *args, &block)
-      end
-    end
-
-  private
-    attr_reader :definition, :context, :args, :block, :registry_when_committed
-
-    def committed_on(registry)
-      @registry_when_committed = registry
-      @committed = true
+      raise RuntimeError, 'not committed' unless committed?
+      raise RuntimeError, 'already rolled back' if rolled_back?
+      rollback_hook.call(registry, context, *args, &block)
+      mark_rolled_back
     end
 
     def committed?
       @committed
+    end
+
+    def rolled_back?
+      @rolled_back
+    end
+
+  private
+    attr_reader :definition, :context, :args, :block
+
+    def committed_on(registry)
+      @registry_when_committed = registry
+    end
+
+    def mark_committed
+      @committed = true
+    end
+
+    def mark_rolled_back
+      @rolled_back = true
     end
 
     def commit_hook
@@ -46,7 +58,7 @@ module Gluer
     end
 
     def registry
-      definition.registry_factory.call
+      @registry ||= definition.registry_factory.call
     end
   end
 end
