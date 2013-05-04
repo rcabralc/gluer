@@ -78,7 +78,8 @@ describe Gluer::Registration do
   describe "#rollback" do
     before { subject.commit }
 
-    it "calls the rollback hook with right arguments" do
+    it "calls the rollback hook with right arguments, using same registry" do
+      definition.registry_factory.should_not_receive(:call)
       rollback_hook.should_receive(:call).with(registry, context, *args)
       subject.rollback
     end
@@ -104,11 +105,6 @@ describe Gluer::Registration do
     it "rejects further commits" do
       subject.rollback
       expect { subject.commit }.to raise_error
-    end
-
-    it "uses the same registry used in #commit" do
-      definition.registry_factory.should_not_receive(:call)
-      subject.rollback
     end
   end
 end
