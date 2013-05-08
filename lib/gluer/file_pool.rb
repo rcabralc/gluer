@@ -1,6 +1,6 @@
 require 'gluer/configuration'
 require 'gluer/file'
-require 'gluer/ordered_set'
+require 'set'
 
 module Gluer
   class FilePool
@@ -9,19 +9,21 @@ module Gluer
     end
 
     def get(path)
-      files.detect { |file| file.path == path }
+      files.fetch(path)
     end
 
     def clear
-      @files = OrderedSet.new
+      @files = Hash.new
     end
 
     def update
-      new_files = OrderedSet.new(collect)
-      diff = files - new_files
-      diff.each(&:rollback_all)
-      self.files = new_files
-      files.each(&:reload)
+      updated_file_paths = Set.new(collect)
+      (current_file_paths - updated_file_paths).each do |old_path|
+        files.delete(old_path).unload
+      end
+      updated_file_paths.each do |path|
+        (files[path] ||= File.new(path)).reload
+      end
     end
 
   private
@@ -30,8 +32,11 @@ module Gluer
     def collect
       base_path = Gluer.config.base_path
       signature = Gluer.config.magic_signature
-      filtered_file_paths = Gluer.config.file_filter.call(base_path, signature)
-      filtered_file_paths.map { |path| File.new(path) }
+      Gluer.config.file_filter.call(base_path, signature)
+    end
+
+    def current_file_paths
+      Set.new(files.keys)
     end
   end
 end

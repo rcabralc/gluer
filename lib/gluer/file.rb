@@ -22,7 +22,7 @@ module Gluer
       touch
     end
 
-    def rollback_all
+    def unload
       registration_pool.rollback
       registration_pool.clear
     end
