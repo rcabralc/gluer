@@ -129,8 +129,8 @@ Gluer.reload
 When the file containing `MyFoo` is reloaded, the previous registration is
 rolled back, and a new registration is done.  This keeps the registry
 `FooRegistry` free of repetitions.  In fact, you must know that `Gluer.reload`
-will load that file, instead of letting your reloader lib do that for you
-lazily.
+will load that file eagerly, instead of letting your reloader lib do that for
+you lazily (even if you customize the file loader, as in the example given).
 
 ## Caveats
 
