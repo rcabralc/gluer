@@ -47,7 +47,8 @@ end
 ```
 
 But firstly, you must configure Gluer in order to make it recognize that
-``add_foo``.  If you are using Rails, this goes well in an initializer file, or
+``add_foo``.  If you are using Rails, this goes well before running the
+Rails initialization (in config/environment.rb file), or
 in a place where you are sure that `MyFoo`'s file was not loaded yet:
 
 ```ruby
@@ -62,6 +63,8 @@ Gluer.define_registration :add_foo do |registration|
 
   registration.registry { FooRegistry }
 end
+
+Gluer.reload # initial loading
 ```
 
 Next, in a place that runs early in every request (like a ``before_filter`` in
