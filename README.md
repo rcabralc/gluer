@@ -57,7 +57,7 @@ class MyFoo
 end
 
 Gluer.setup(MyFoo) do
-  add_foo 'bar' { MyBaz.init! }
+  foo 'bar' { MyBaz.init! }
 end
 ```
 
@@ -71,14 +71,30 @@ FooRegistry.get_all_foos
 ```
 
 But firstly, you must configure Gluer in order to make it recognize that
-``add_foo`` call.  If you are using Rails, this goes well in an initializer
-file, or in a place where you are sure that `MyFoo`'s file was not loaded yet:
+`foo` call.  If you are using Rails, this goes well in an initializer file, or
+in a place where you are sure that `MyFoo`'s file was not loaded yet.  Assuming
+that the class `MyFoo`, its configuration and every other code we want Gluer to
+look at are defined in `app/` folder:
 
 ```ruby
 require 'foo_registry'
 require 'gluer'
 
-Gluer.define_registration :add_foo do |registration|
+# Basic configuration
+Gluer.configure do |config|
+  # The base path is the root to start searchin files which contain
+  # registration code to be reloaded.  In this example we'll lookup files only
+  # in 'app/' folder in a Rails app.
+  config.base_path = File.join(Rails.root, 'app')
+
+  # The file loader is a Proc that will be called to load each file found.
+  # In a Rails app you probably want to use ActiveSupport.
+  # Defaults to ->(f) { load(f) }.
+  config.file_loader = ->(f) { ActiveSupport::Dependencies.depend_on(f) }
+end
+
+# Registration definitions.  Here we define the `foo` method.
+Gluer.define_registration :foo do |registration|
   registration.on_commit do |registry, context, arg, &block|
     registry.add_foo(context, as: arg, &block)
   end
@@ -89,6 +105,8 @@ Gluer.define_registration :add_foo do |registration|
 
   registration.registry { FooRegistry }
 end
+
+# Put other registration definitions here.
 
 Gluer.reload # initial loading
 ```
