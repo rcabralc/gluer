@@ -19,26 +19,41 @@ Or install it yourself as:
 
     $ gem install gluer
 
-## Usage
+## The problem this gem tries to solve
 
 Let's suppose you are using a library which holds registrations in a global
 registry and its usage is something along these lines:
 
 ```ruby
+require 'foo_registry'
+
 class MyFoo
+  # MyFoo code...
 end
 
 FooRegistry.add_foo(MyFoo, as: 'bar') { MyBaz.init! }
 ```
 
 This is simple and harmless, until you start to use some tool or lib to reload
-code for you, like ActiveSupport.  If that line is put in a file which is
-reloaded in every request in your app (in dev mode) you'll end up with many
-registrations of `MyFoo` as a foo.  The way Gluer allows you to escape from
-this is by enclosing the registration code in a block:
+code for you, like ActiveSupport.  If that code is put in a file which is
+reloaded in every request in your app (as in development mode) you'll end up
+with many registrations of `MyFoo` in `FooRegistry`.  After two requests:
+
+```ruby
+FooRegistry.get_all_foos
+#=> [[MyFoo, 'bar', #<Proc:0x...>], [MyFoo, 'bar', #<Proc:0x...>]]
+```
+
+And this sometimes is not good even when developing.
+
+## A solution
+
+The way Gluer allows you to escape from this is by enclosing the registration
+code in a block:
 
 ```ruby
 class MyFoo
+  # MyFoo code...
 end
 
 Gluer.setup(MyFoo) do
@@ -46,11 +61,23 @@ Gluer.setup(MyFoo) do
 end
 ```
 
-But firstly, you must configure Gluer in order to make it recognize that
-``add_foo``.  If you are using Rails, this goes well in an initializer file, or
-in a place where you are sure that `MyFoo`'s file was not loaded yet:
+That way that registration happens once even after many requests.  Well, it
+actually happens in every request, but gets properly removed before being
+added again.  So, after many requests you'll get this:
 
 ```ruby
+FooRegistry.get_all_foos
+#=> [[MyFoo, 'bar', #<Proc:0x...>]]
+```
+
+But firstly, you must configure Gluer in order to make it recognize that
+``add_foo`` call.  If you are using Rails, this goes well in an initializer
+file, or in a place where you are sure that `MyFoo`'s file was not loaded yet:
+
+```ruby
+require 'foo_registry'
+require 'gluer'
+
 Gluer.define_registration :add_foo do |registration|
   registration.on_commit do |registry, context, arg, &block|
     registry.add_foo(context, as: arg, &block)
@@ -66,6 +93,14 @@ end
 Gluer.reload # initial loading
 ```
 
+The commit hook is called when the registration is to be performed.  `registry`
+is, as you may guess, is the `FooRegistry` object.  `context` is the argument
+given to `Gluer.setup`, in this case the `MyFoo` class object.  All remaining
+arguments and block are forwarded from the call to ``add_foo`` in
+`Gluer.setup`'s block.
+
+The rollback hook receives the same arguments as the commit hook.
+
 Next, in a place that runs early in every request (like a ``before_filter`` in
 `ApplicationController`, if you're using Rails):
 
@@ -79,19 +114,11 @@ rolled back, and a new registration is done.  This keeps the registry
 will load that file, instead of letting your reloader lib do that for you
 lazily.
 
-The commit hook is called when the registration is to be performed.  `registry`
-is, as you may guess, is the `FooRegistry` object.  `context` is the argument
-given to `Gluer.setup`, in this case the `MyFoo` class object.  All remaining
-arguments and block are forwarded from the call to ``add_foo`` in
-`Gluer.setup`'s block.
-
-The rollback hook receives the same arguments as the commit hook.
-
 ## Caveats
 
 1. `FooRegistry` must provide a way to unregister.
 2. It uses `grep` to get the files with `Gluer.setup`. Probably a problem in
-   Windows. I did not test.
+   Windows. Tested only in Linux.
 3. Loads the found files eagerly. So, you should account for the side effects
    of this.
 
