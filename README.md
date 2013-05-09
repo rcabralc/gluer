@@ -114,8 +114,8 @@ Gluer.reload # initial loading
 The commit hook is called when the registration is to be performed.  `registry`
 is, as you may guess, is the `FooRegistry` object.  `context` is the argument
 given to `Gluer.setup`, in this case the `MyFoo` class object.  All remaining
-arguments and block are forwarded from the call to ``add_foo`` in
-`Gluer.setup`'s block.
+arguments and block are forwarded from the call to `foo` in `Gluer.setup`'s
+block.
 
 The rollback hook receives the same arguments as the commit hook.
 
