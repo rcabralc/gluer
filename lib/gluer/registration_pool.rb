@@ -1,5 +1,3 @@
-require 'gluer/ordered_set'
-
 module Gluer
   class RegistrationPool
     def initialize
@@ -15,7 +13,7 @@ module Gluer
     end
 
     def add(registration)
-      registrations.add(registration)
+      registrations.push(registration)
     end
 
     def replace(registration_pool)
@@ -23,7 +21,7 @@ module Gluer
     end
 
     def clear
-      @registrations = OrderedSet.new
+      @registrations = []
     end
 
   protected
