@@ -2,9 +2,13 @@ require "gluer/registration"
 require "gluer/registration_definition"
 
 module Gluer
-  def self.define_registration(name)
+  def self.define_registration(name, &block)
     definition = RegistrationDefinition.new(name)
-    yield definition
+    if block.arity == 1
+      block.call(definition)
+    else
+      definition.instance_exec(&block)
+    end
     DSL.add_registration_definition(name, definition)
   end
 
@@ -22,6 +26,10 @@ module Gluer
 
       def get_registration_definition(name)
         defined_registrations.fetch(name)
+      end
+
+      def clear
+        @defined_registrations = nil
       end
 
     private
