@@ -28,7 +28,7 @@ module Gluer
 
     def default_file_filter
       Proc.new do |base_path, magic_signature|
-        output = %x{cd '#{base_path}' && grep -IlFr '#{magic_signature}' --exclude-dir 'spec' .}
+        output = %x{cd '#{base_path}' && grep -IlFr '#{magic_signature}' --include=*.rb --exclude-dir 'spec' .}
         output.lines.map do |line|
           ::File.expand_path(line.chomp, base_path)
         end
