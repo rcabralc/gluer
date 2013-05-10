@@ -52,8 +52,10 @@ describe "Default usage" do
       end
       registration.registry { Registry }
     end
+  end
 
-    f = File.open("temp_code.rb", "w")
+  before do
+    f = File.new("temp_code.rb", "w")
     f.write(<<-CODE)
       require 'gluer'
       Context = Object.new
@@ -86,7 +88,7 @@ describe "Default usage" do
     before do
       Gluer.reload
 
-      f = File.open("temp_code.rb", "w")
+      f = File.new("temp_code.rb", "w")
       f.write(<<-CODE)
         require 'gluer'
         Context = Object.new
@@ -115,7 +117,7 @@ describe "Default usage" do
     before do
       Gluer.reload
 
-      f = File.open("temp_code.rb", "w")
+      f = File.new("temp_code.rb", "w")
       f.write(<<-CODE)
         require 'gluer'
       CODE
