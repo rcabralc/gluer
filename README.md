@@ -108,7 +108,11 @@ end
 
 # Put other registration definitions here.
 
-Gluer.reload # initial loading
+if Rails.configuration.cache_classes
+  # Load if we're going to cache classes (commonly done in production
+  # environment).
+  Gluer.reload
+end
 ```
 
 The commit hook is called when the registration is to be performed.  `registry`
@@ -123,7 +127,14 @@ Next, in a place that runs early in every request (like a ``before_filter`` in
 `ApplicationController`, if you're using Rails):
 
 ```ruby
-Gluer.reload
+before_filter do
+  unless Rails.configuration.cache_classes
+    # If classes were cached, our initializer already has loaded everything
+    # Gluer is interested in, and we don't need the overhead of loading stuff
+    # in every request.
+    Gluer.reload
+  end
+end
 ```
 
 When the file containing `MyFoo` is reloaded, the previous registration is
