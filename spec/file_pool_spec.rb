@@ -35,9 +35,9 @@ describe Gluer::FilePool do
     end
 
     it "makes them available from #get" do
-      expect { subject.get('path1') }.to_not raise_error
-      expect { subject.get('path2') }.to_not raise_error
-      expect { subject.get('path3') }.to_not raise_error
+      expect(subject.get('path1')).to_not be_nil
+      expect(subject.get('path2')).to_not be_nil
+      expect(subject.get('path3')).to_not be_nil
     end
 
     context "when filtering doesn't change in next call" do
@@ -59,7 +59,7 @@ describe Gluer::FilePool do
 
       it "keeps existing files available from #get" do
         subject.update
-        expect { subject.get('path1') }.to_not raise_error
+        expect(subject.get('path1')).to_not be_nil
       end
 
       it "reloads existing files" do
@@ -95,9 +95,9 @@ describe Gluer::FilePool do
         subject.update
       end
 
-      specify "getting the unloaded file results in key error" do
+      specify "getting the unloaded file results in nil" do
         subject.update
-        expect { subject.get('path1') }.to raise_error(KeyError)
+        expect(subject.get('path1')).to be_nil
       end
 
       it "reloads existing files" do
@@ -114,7 +114,7 @@ describe Gluer::FilePool do
 
       it "makes the new file available from #get" do
         subject.update
-        expect { subject.get('path4') }.to_not raise_error
+        expect(subject.get('path4')).to_not be_nil
       end
     end
   end

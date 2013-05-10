@@ -9,7 +9,7 @@ module Gluer
     end
 
     def get(path)
-      files.fetch(path)
+      files[path]
     end
 
     def clear

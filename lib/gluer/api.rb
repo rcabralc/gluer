@@ -5,7 +5,7 @@ module Gluer
   class << self
     def setup(context=nil, &block)
       path = block.binding.eval('__FILE__')
-      file = file_pool.get(path)
+      return unless file = file_pool.get(path)
       collect_registrations(context, block) do |registration|
         file.add_registration(registration)
       end
