@@ -107,12 +107,6 @@ Gluer.define_registration :foo do |registration|
 end
 
 # Put other registration definitions here.
-
-if Rails.configuration.cache_classes
-  # Load if we're going to cache classes (commonly done in production
-  # environment).
-  Gluer.reload
-end
 ```
 
 The commit hook is called when the registration is to be performed.  `registry`
@@ -123,8 +117,17 @@ block.
 
 The rollback hook receives the same arguments as the commit hook.
 
-Next, in a place that runs early in every request (like a ``before_filter`` in
-`ApplicationController`, if you're using Rails):
+Next, add some code to do a first load.  This could go in your environment.rb
+file if you are using Rails:
+
+```ruby
+config.after_initialize do
+  Gluer.reload # initial loading
+end
+```
+
+Lastly, in a place that runs early in every request (like a ``before_filter``
+in `ApplicationController`, if you're using Rails):
 
 ```ruby
 before_filter do
